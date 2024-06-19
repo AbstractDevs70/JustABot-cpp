@@ -49,19 +49,13 @@ int main() {
             strcpy(converted, term_cmd.c_str());
             system(converted);
 
-            ifstream stat("status.txt");
-            string status;
-            getline(stat, status);
-            
-            cout << status << endl;
-
             ifstream file("r.txt");
             string answer;
             getline(file, answer);
             
             switch(bancheck(event.command.get_issuing_user().id)){
                 case true:
-                    if (status == "0" && answer != "" && answer.length() <= 2000){
+                    if (answer != "" && answer.length() <= 2000){
                         event.edit_original_response(answer);
                     }else{
                         if(answer.length()>2000){
@@ -85,6 +79,24 @@ int main() {
             event.reply("> AbstractBot\nСоздатель: AbstractDevs\n\n> Простой бот, написанный на C++ с использованием библиотеки D++\n\n> GitHub: \n> https://github.com/AbstractDevs70/JustABot-cpp");
          }
 
+         if(event.command.get_command_name()=="about"){
+            dpp::snowflake usrid = get<dpp::snowflake>(event.get_parameter("пользователь"));
+            dpp::user usr = event.command.get_resolved_user(usrid);
+            dpp::message infor("> ## 🔰 Общедоступная информация\n> :globe_with_meridians: Глобальный ник: "+usr.global_name+"\n> :white_check_mark: Юзернейм: "+usr.username+"\n> :passport_control: Айди: "+to_string(usr.id)+"\n\n> []( "+usr.get_default_avatar_url()+")");
+
+            dpp::embed emb = dpp::embed()
+                .set_color(958376)
+                .set_title("Информация о " + usr.username)
+                .set_description("> :globe_with_meridians: Глобальный ник: \n> (>) "+usr.global_name+"\n> :white_check_mark: Юзернейм: "+usr.username+"\n> :passport_control: Айди: "+to_string(usr.id))
+                .set_thumbnail(usr.get_avatar_url())
+                .add_field(
+                    "Пинг",
+                    usr.get_mention(),
+                    true
+                );
+            event.reply(emb);
+         }
+
     });
  
     bot.on_ready([&bot](const dpp::ready_t& event) {
@@ -106,11 +118,17 @@ int main() {
 
             dpp::slashcommand info ("info", "Немного информации", bot.me.id);
 
+            dpp::slashcommand about ("about", "Получить информацию об участнике", bot.me.id);
+            about.add_option(
+                dpp::command_option(dpp::co_user, "пользователь", "...", true)
+            );
+
             
             bot.global_command_create(echo);
             bot.global_command_create(random);
             bot.global_command_create(calc);
             bot.global_command_create(info);
+            bot.global_command_create(about);
             bot.set_presence(dpp::presence(dpp::ps_online, dpp::at_custom, "У меня появился гитхаб (используй /info)"));
         }
     });
