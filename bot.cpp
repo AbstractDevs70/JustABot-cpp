@@ -81,6 +81,10 @@ int main() {
             }
          }
 
+         if(event.command.get_command_name()=="info"){
+            event.reply("AbstractBot\nAbstractDevs\nПростой бот, написанный на C++ с использованием библиотеки D++\nGitHub: https://github.com/AbstractDevs70/JustABot-cpp");
+         }
+
     });
  
     bot.on_ready([&bot](const dpp::ready_t& event) {
@@ -100,10 +104,13 @@ int main() {
                 dpp::command_option(dpp::co_string, "пример", "Ваш пример", true)
             );
 
+            dpp::slashcommand info ("info", "Немного информации", bot.me.id);
+
             
             bot.global_command_create(echo);
             bot.global_command_create(random);
             bot.global_command_create(calc);
+            bot.global_command_create(info);
             bot.set_presence(dpp::presence(dpp::ps_dnd, dpp::at_custom, "На тестировании"));
         }
     });
