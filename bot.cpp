@@ -82,7 +82,7 @@ int main() {
          }
 
          if(event.command.get_command_name()=="info"){
-            event.reply("AbstractBot\nAbstractDevs\nПростой бот, написанный на C++ с использованием библиотеки D++\nGitHub: https://github.com/AbstractDevs70/JustABot-cpp");
+            event.reply("> AbstractBot\nСоздатель: AbstractDevs\n\n> Простой бот, написанный на C++ с использованием библиотеки D++\n\n> GitHub: \n> https://github.com/AbstractDevs70/JustABot-cpp");
          }
 
     });
