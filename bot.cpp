@@ -111,7 +111,7 @@ int main() {
             bot.global_command_create(random);
             bot.global_command_create(calc);
             bot.global_command_create(info);
-            bot.set_presence(dpp::presence(dpp::ps_dnd, dpp::at_custom, "У меня появился гитхаб (используй /info)"));
+            bot.set_presence(dpp::presence(dpp::ps_online, dpp::at_custom, "У меня появился гитхаб (используй /info)"));
         }
     });
  
