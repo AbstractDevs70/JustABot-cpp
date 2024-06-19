@@ -3,7 +3,6 @@ using namespace std;
 dpp::cluster bot(BOT_TOKEN);
 
 int main() {
-    cout << system("echo Hi");
     bot.on_log(dpp::utility::cout_logger());
  
     bot.on_slashcommand([](const dpp::slashcommand_t& event) {
