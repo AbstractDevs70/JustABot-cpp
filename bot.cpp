@@ -20,17 +20,21 @@ int main() {
         }
 
         if (event.command.get_command_name() == "random"){
-            double num = get<double>(event.get_parameter("размах"));
-            long int convert = num;
+            double from = get<double>(event.get_parameter("от"));
+            double to = get<double>(event.get_parameter("до"));
+            long int cfrom = from;
+            long int cto = to;
             switch (bancheck(event.command.get_issuing_user().id)){
                 case true:
                     event.thinking();
-                    if (convert > 0){
+                    if (from > 0 && to > 0 && from <= to){
                     srand(time(NULL));
-                    long int randomi = rand() % convert;
+                    long int raznica = to - from;
+                    long int random = rand() % raznica + 1;
+                    long int randomi = from + random;
                     event.edit_original_response("Вам выпало:" + to_string( randomi ));
                     } else{
-                        event.edit_original_response(dpp::message("Число должно быть больше 0!"));
+                        event.edit_original_response(dpp::message("Число от должно быть <= числа до и ни одно число не равно 0!"));
                     } break;
                 
                 case false:
@@ -84,10 +88,17 @@ int main() {
             dpp::user usr = event.command.get_resolved_user(usrid);
             dpp::message infor("> ## 🔰 Общедоступная информация\n> :globe_with_meridians: Глобальный ник: "+usr.global_name+"\n> :white_check_mark: Юзернейм: "+usr.username+"\n> :passport_control: Айди: "+to_string(usr.id)+"\n\n> []( "+usr.get_default_avatar_url()+")");
 
+            string blocked;
+            if(bancheck(usr.id)==true){
+                blocked = "Нет";
+            }else{
+                 blocked = "Да";
+            }
+
             dpp::embed emb = dpp::embed()
                 .set_color(958376)
                 .set_title("Информация о " + usr.username)
-                .set_description("> :globe_with_meridians: Глобальный ник: \n> (>) "+usr.global_name+"\n> :white_check_mark: Юзернейм: "+usr.username+"\n> :passport_control: Айди: "+to_string(usr.id))
+                .set_description("> :globe_with_meridians: Глобальный ник: \n> (>) "+usr.global_name+"\n> :white_check_mark: Юзернейм: "+usr.username+"\n> :passport_control: Айди: "+to_string(usr.id)+"\n> :no_entry_sign: Заблокирован: "+ blocked)
                 .set_thumbnail(usr.get_avatar_url())
                 .add_field(
                     "Пинг",
@@ -108,7 +119,10 @@ int main() {
 
             dpp::slashcommand random ("random", "Попытай удачу", bot.me.id);
             random.add_option(
-                dpp::command_option(dpp::co_number, "размах", "До какого числа", true)
+                dpp::command_option(dpp::co_number, "от", "От какого числа", true)
+            );
+            random.add_option(
+                dpp::command_option(dpp::co_number, "до", "До какого числа", true)
             );
 
             dpp::slashcommand calc ("calculate", "Высчитать пример", bot.me.id);
