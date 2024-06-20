@@ -27,14 +27,14 @@ int main() {
             switch (bancheck(event.command.get_issuing_user().id)){
                 case true:
                     event.thinking();
-                    if (from > 0 && to > 0 && from <= to){
+                    if (from > 0 && to > 0 && from < to){
                     srand(time(NULL));
-                    long int raznica = to - from;
-                    long int random = rand() % raznica + 1;
+                    long int raznica = to +1 - from;
+                    long int random = rand() % raznica ;
                     long int randomi = from + random;
                     event.edit_original_response("Вам выпало:" + to_string( randomi ));
                     } else{
-                        event.edit_original_response(dpp::message("Число от должно быть <= числа до и ни одно число не равно 0!"));
+                        event.edit_original_response(dpp::message("Число от должно быть < числа до и ни одно число не равно 0!"));
                     } break;
                 
                 case false:
@@ -96,15 +96,29 @@ int main() {
             }
 
             dpp::embed emb = dpp::embed()
-                .set_color(958376)
                 .set_title("Информация о " + usr.username)
-                .set_description("> :globe_with_meridians: Глобальный ник: \n> (>) "+usr.global_name+"\n> :white_check_mark: Юзернейм: "+usr.username+"\n> :passport_control: Айди: "+to_string(usr.id)+"\n> :no_entry_sign: Заблокирован: "+ blocked)
-                .set_thumbnail(usr.get_avatar_url())
+                .set_description("> :globe_with_meridians: Глобальный ник: "+usr.global_name+"\n> :white_check_mark: Юзернейм: "+usr.username+"\n> :passport_control: Айди: "+to_string(usr.id)+"\n> :no_entry_sign: Заблокирован: "+ blocked)
+                .set_image(usr.get_avatar_url())
                 .add_field(
                     "Пинг",
                     usr.get_mention(),
                     true
                 );
+                if( usr.is_bot() == true){
+                    emb.set_color(dpp::colors::purple);
+                    emb.add_field(
+                        "Является",
+                        "Ботом",
+                        true
+                    );
+                }else{
+                    emb.set_color(dpp::colors::mint);
+                    emb.add_field(
+                        "Является",
+                        "Пользователем",
+                        true
+                    );
+                }
             event.reply(emb);
          }
 
