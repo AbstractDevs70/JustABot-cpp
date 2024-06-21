@@ -70,16 +70,14 @@ int main() {
                 case true:
                     if (answer != "" && answer.length() <= 2000){
                         event.edit_original_response(primer + "=" + answer);
-                        cout << primer;
                     }else{
                         if(answer.length()>2000){
                             dpp::message err2(channel, "[ ! ] Ответ слишком длинный (>2000 символов)");
-                            bot.message_create(err2);
+                            event.edit_original_response(err2);
                         }else{
                             dpp::message err1(channel, "[ ! ] Пример содержит ошибку");
-                            bot.message_create(err1);
+                            event.edit_original_response(err1);
                          }
-                        event.delete_original_response();
                     }
                     
                     break;
@@ -88,6 +86,7 @@ int main() {
                     cout << "Заблокировано";
                     break;
             }
+            cout << primer;
             cout << " | " << event.command.get_issuing_user().username << endl; 
          }
 
