@@ -3,3 +3,7 @@ banlist.txt
 status.txt
 r.txt
 host
+bot
+bot_res.cpp
+banlist.json
+.vscode/*

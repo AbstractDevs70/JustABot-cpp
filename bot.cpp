@@ -1,12 +1,14 @@
 #include"includes.h"
 using namespace std;
-dpp::cluster bot(BOT_TOKEN);
+
+json global_data;
 
 int main() {
+    dpp::cluster bot(BOT_TOKEN);
     bot.on_log(dpp::utility::cout_logger());
     cout << dpp::colors::green;
  
-    bot.on_slashcommand([](const dpp::slashcommand_t& event) {
+    bot.on_slashcommand([&bot](const dpp::slashcommand_t& event) {
         if (event.command.get_command_name() == "echo") {
             dpp::snowflake channel = event.command.get_channel().id;
             cout << "echo | ";
@@ -17,7 +19,7 @@ int main() {
                 event.delete_original_response();
                 cout << testovo;
             }else {
-                event.reply(dpp::message("[ ! ] Вы заблокированы за нарушения"));
+                event.reply(dpp::message(prikol()));
             }
             cout << " | " << event.command.get_issuing_user().username << endl; 
         }
@@ -44,7 +46,7 @@ int main() {
                     } break;
                 
                 case false:
-                    event.reply(dpp::message("[ ! ] Вы заблокированы за нарушения"));
+                    event.reply(dpp::message(prikol()));
                     cout << "Заблокировано";
                     break;
             }
@@ -56,7 +58,7 @@ int main() {
             event.thinking();
             dpp::snowflake channel = event.command.get_channel().id;
             string primer = get<string>(event.get_parameter("пример"));
-            string term_cmd = "calc '" + primer + "' > r.txt && echo $? > status.txt";
+            string term_cmd = "calc '" + primer + "' > r.txt";
             int sz =term_cmd.length();
             char* converted = new char[sz+1];
             strcpy(converted, term_cmd.c_str());
@@ -69,7 +71,7 @@ int main() {
             switch(bancheck(event.command.get_issuing_user().id)){
                 case true:
                     if (answer != "" && answer.length() <= 2000){
-                        event.edit_original_response(primer + "=" + answer);
+                        event.edit_original_response("`" + primer + "=" + answer + "`");
                     }else{
                         if(answer.length()>2000){
                             dpp::message err2(channel, "[ ! ] Ответ слишком длинный (>2000 символов)");
@@ -82,7 +84,7 @@ int main() {
                     
                     break;
                 case false:
-                    event.edit_original_response(dpp::message("[ ! ] Вы заблокированы за нарушения"));
+                    event.edit_original_response(dpp::message(prikol()));
                     cout << "Заблокировано";
                     break;
             }
@@ -96,9 +98,13 @@ int main() {
          }
 
          if(event.command.get_command_name()=="about"){
+            load_notes();
+            dpp::message msg;
             dpp::snowflake usrid = get<dpp::snowflake>(event.get_parameter("пользователь"));
             dpp::user usr = event.command.get_resolved_user(usrid);
+            global_data["usr"] = usr.id;
             dpp::message infor("> ## 🔰 Общедоступная информация\n> :globe_with_meridians: Глобальный ник: "+usr.global_name+"\n> :white_check_mark: Юзернейм: "+usr.username+"\n> :passport_control: Айди: "+to_string(usr.id)+"\n\n> []( "+usr.get_default_avatar_url()+")");
+            string usr_notes;
 
             string blocked;
             if(bancheck(usr.id)==true){
@@ -106,10 +112,9 @@ int main() {
             }else{
                  blocked = "Да";
             }
-
             dpp::embed emb = dpp::embed()
                 .set_title("Информация о " + usr.username)
-                .set_description("> :globe_with_meridians: Глобальный ник: "+usr.global_name+"\n> :white_check_mark: Юзернейм: "+usr.username+"\n> :passport_control: Айди: "+to_string(usr.id)+"\n> :no_entry_sign: Заблокирован: "+ blocked)
+                .set_description("> :globe_with_meridians: Глобальный ник: "+usr.global_name+"\n> :white_check_mark: Юзернейм: "+usr.username+"\n> :passport_control: Айди: "+to_string(usr.id)+"\n> :no_entry_sign: Заблокирован: "+ blocked + "\n\n## Заметки пользователей\nИспользуй /notes")
                 .set_image(usr.get_avatar_url())
                 .add_field(
                     "Пинг",
@@ -131,7 +136,8 @@ int main() {
                         true
                     );
                 }
-            event.reply(emb);
+            msg = emb;
+            event.reply(msg);
             cout << "about | "<< usr.username << " | " << event.command.get_issuing_user().username << endl; 
          }
 
@@ -239,15 +245,137 @@ int main() {
                 );
                 cout << gget1 << ", " << gget2  << ", ";
             }
+            if(bancheck(event.command.get_issuing_user().id) == true){
+                dpp::message msg(channel, cemb);
+                bot.message_create(msg);
 
-            dpp::message msg(channel, cemb);
-            bot.message_create(msg);
+                event.delete_original_response();
+            }else{
+                event.edit_original_response(dpp::message(prikol()));
+            }
 
-            event.delete_original_response();
+            
             cout << " | " << event.command.get_issuing_user().username << endl; 
          }
 
+         if(event.command.get_command_name() == "banlist"){
+            dpp::snowflake usrid = get<dpp::snowflake>(event.get_parameter("пользователь"));
+            dpp::user usr = event.command.get_resolved_user(usrid);
+            bool action = get<bool>(event.get_parameter("действие"));
+            long int uid = usr.id;
+            ofstream file;
+
+            if(event.command.get_issuing_user().id == 1056407095605469214){
+                load_blacklist();
+                switch(action){
+                    case true:
+                        blackfile["list"][bans + 1] = uid;
+                        file.open("additional/banlist.json");
+                        if(file.is_open()){
+                            file << blackfile << endl;
+                        }
+                        file.close();
+                        load_blacklist();
+                        event.reply("Пользователь внесен в banlist");
+                        break;
+                    
+                    case false:
+                        for(int i = 0; i < size(blackfile["list"]); i++){
+                            if (uid == blackfile["list"][i]){
+                                blackfile["list"].erase(i);
+                            }
+                        }
+                        file.open("additional/banlist.json");
+                        if(file.is_open()){
+                            file << blackfile << endl;
+                        }
+                        file.close();
+                        load_blacklist();
+                        event.reply("Пользователь удален из banlist");
+                        break;
+                }
+            }else{
+                event.reply("Вы не AbstractDevs!");
+            }
+         }
+
+         if(event.command.get_command_name() == "notes"){
+            load_notes();
+            string usr_notes;
+            string act = get<string>(event.get_parameter("действие"));
+            dpp::snowflake usrid = get<dpp::snowflake>(event.get_parameter("пользователь"));
+            string smsg;
+            if (event.get_parameter("заметка").index() != 0){
+                smsg = get<string>(event.get_parameter("заметка"));
+            }else if(act == "Добавить"){
+                event.reply("Пустая заметка!");
+            }
+            dpp::user usr = event.command.get_resolved_user(usrid);
+            ofstream file;
+            
+            if(act == "Добавить" && event.get_parameter("заметка").index() != 0 ){
+                event.thinking();
+                bool isnew = true;
+                notes[to_string(usr.id)][to_string(event.command.get_issuing_user().id)]["nick"] = event.command.get_issuing_user().username;
+                notes[to_string(usr.id)][to_string(event.command.get_issuing_user().id)]["msg"] = smsg;
+                for (int i = 0; i < size(notes[to_string(usr.id)]["list"]); i++){
+                    if(notes[to_string(usr.id)]["list"][i] == to_string(event.command.get_issuing_user().id)){
+                        isnew = false;
+                    }
+                }
+                if (isnew==true){
+                    notes[to_string(usr.id)]["list"].push_back(event.command.get_issuing_user().id);
+                }
+                if (bancheck(event.command.get_issuing_user().id) == true){
+                        file.open("data/notes.json");
+                        if(file.is_open()){
+                            file << notes << endl;
+                            }
+                        file.close();
+                        event.edit_original_response(dpp::message("Заметка добавлена"));
+                }else {
+                        event.edit_original_response(dpp::message(prikol()));
+                    }
+            }
+            if(act == "Удалить"){
+                if (notes[to_string(usr.id)][to_string(event.command.get_issuing_user().id)] != nullptr){
+                    notes[to_string(usr.id)].erase(to_string(event.command.get_issuing_user().id));
+                }
+                notes[to_string(usr.id)].erase(to_string(event.command.get_issuing_user().id));
+                for (int i = 0; i < size(notes[to_string(usr.id)]["list"]); i++){
+                    if (notes[to_string(usr.id)]["list"][i] == to_string(event.command.get_issuing_user().id) ){
+                        notes[to_string(usr.id)]["list"].erase(i);
+                    }
+                }
+                file.open("data/notes.json");
+                    if(file.is_open()){
+                        file << notes << endl;
+                    }
+                    file.close();
+                event.reply("Заметка удалена");
+            }
+            if(act == "Смотреть"){
+                if (notes[to_string(usr.id)] != nullptr){
+                for (int i = 0; i < size(notes[to_string(usr.id)]["list"]); i++){
+                    string dataloc = notes[to_string(usr.id)]["list"][i];
+                    json data = notes[to_string(usr.id)][dataloc];
+                    string nick = data["nick"];
+                    string msg = data["msg"];
+                    usr_notes += u8"> `<" + nick + ">`\n" + msg + "\n\n";
+                }
+            }else{
+                    usr_notes = "Отсутствуют";
+                }
+                dpp::embed listing = dpp::embed()
+                .set_title("Пользовательские заметки участника "+ usr.username)
+                .set_description(usr_notes)
+                .set_color(dpp::colors::alice_blue);
+                event.reply(listing);
+            }
+         }
+
     });
+
  
     bot.on_ready([&bot](const dpp::ready_t& event) {
         if (dpp::run_once<struct register_bot_commands>()) {
@@ -331,7 +459,7 @@ int main() {
             embed.add_option(
                 dpp::command_option(dpp::co_boolean, "филд4-инлайн", "...", false)
             );
-            embed.add_option(
+            embed.add_option( 
                 dpp::command_option(dpp::co_string, "филд5-заголовок", "...", false)
             );
             embed.add_option(
@@ -346,6 +474,30 @@ int main() {
             embed.add_option(
                 dpp::command_option(dpp::co_string, "футер-иконка", "...", false)
             );
+
+            dpp::slashcommand banlist ("banlist", "Управление бан листом", bot.me.id);
+            banlist.add_option(
+                dpp::command_option(dpp::co_boolean, "действие", "Выберите действие", true)
+                .add_choice(dpp::command_option_choice("Внести", bool(true)))
+                .add_choice(dpp::command_option_choice("Удалить", bool(false)))
+            );
+             banlist.add_option(
+                dpp::command_option(dpp::co_user, "пользователь", "...", true)
+            );
+
+            dpp::slashcommand notes ("notes", "Пользовательские заметки", bot.me.id);
+            notes.add_option(
+                dpp::command_option(dpp::co_string, "действие", "...", true)
+                .add_choice(dpp::command_option_choice("Добавить", string("Добавить")))
+                .add_choice(dpp::command_option_choice("Удалить", string("Удалить")))
+                .add_choice(dpp::command_option_choice("Смотреть", string("Смотреть")))
+            );
+            notes.add_option(
+                dpp::command_option(dpp::co_user, "пользователь", "...",true)
+            );
+            notes.add_option(
+                dpp::command_option(dpp::co_string, "заметка", "...", false)
+            );
             
 
             
@@ -355,6 +507,8 @@ int main() {
             bot.global_command_create(info);
             bot.global_command_create(about);
             bot.global_command_create(embed);
+            bot.global_command_create(banlist);
+            bot.global_command_create(notes);
             bot.set_presence(dpp::presence(dpp::ps_online, dpp::at_custom, "У меня появился гитхаб (используй /info)"));
         }
     });
