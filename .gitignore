@@ -7,3 +7,4 @@ bot
 bot_res.cpp
 banlist.json
 .vscode/*
+data/notes.json
