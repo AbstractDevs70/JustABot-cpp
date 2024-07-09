@@ -314,7 +314,7 @@ int main() {
             ofstream file;
             
             if(act == "Добавить" && event.get_parameter("заметка").index() != 0 ){
-                event.thinking();
+                event.thinking(true);
                 bool isnew = true;
                 notes[to_string(usr.id)][to_string(event.command.get_issuing_user().id)]["nick"] = event.command.get_issuing_user().username;
                 notes[to_string(usr.id)][to_string(event.command.get_issuing_user().id)]["msg"] = smsg;
@@ -332,7 +332,7 @@ int main() {
                             file << notes << endl;
                             }
                         file.close();
-                        event.edit_original_response(dpp::message("Заметка добавлена"));
+                        event.edit_original_response(dpp::message("Заметка добавлена").set_flags(dpp::m_ephemeral));
                 }else {
                         event.edit_original_response(dpp::message(prikol()));
                     }
@@ -352,7 +352,7 @@ int main() {
                         file << notes << endl;
                     }
                     file.close();
-                event.reply("Заметка удалена");
+                event.reply(dpp::message("Заметка удалена").set_flags(dpp::m_ephemeral));
             }
             if(act == "Смотреть"){
                 if (notes[to_string(usr.id)] != nullptr){
