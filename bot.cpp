@@ -38,7 +38,7 @@ int main() {
                     long int raznica = to +1 - from;
                     long int random = rand() % raznica ;
                     long int randomi = from + random;
-                    event.edit_original_response("Вам выпало:" + to_string( randomi ));
+                    event.edit_original_response(dpp::message("Вам выпало:" + to_string( randomi )));
                     cout << to_string(from) << "/" << to_string(to);
                     } else{
                         event.edit_original_response(dpp::message("Число от должно быть < числа до и ни одно число не равно 0!"));
@@ -71,7 +71,7 @@ int main() {
             switch(bancheck(event.command.get_issuing_user().id)){
                 case true:
                     if (answer != "" && answer.length() <= 2000){
-                        event.edit_original_response("`" + primer + "=" + answer + "`");
+                        event.edit_original_response(dpp::message("`" + primer + "=" + answer + "`"));
                     }else{
                         if(answer.length()>2000){
                             dpp::message err2(channel, "[ ! ] Ответ слишком длинный (>2000 символов)");
@@ -269,7 +269,7 @@ int main() {
                 load_blacklist();
                 switch(action){
                     case true:
-                        blackfile["list"][bans + 1] = uid;
+                        blackfile["list"][bans] = uid;
                         file.open("additional/banlist.json");
                         if(file.is_open()){
                             file << blackfile << endl;

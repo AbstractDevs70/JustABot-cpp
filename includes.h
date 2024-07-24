@@ -14,6 +14,7 @@
 #include<math.h>
 #include"additional/bot_token.h"
 #include"additional/banchecker.h"
+#include"additional/admincheck.h"
 #include"additional/notes.h"
 
 using  json = nlohmann::json;
